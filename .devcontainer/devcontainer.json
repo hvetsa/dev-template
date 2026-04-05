@@ -1,0 +1,113 @@
+{
+  "name": "hvetsa",
+
+  // ── Image ────────────────────────────────────────────────────────────────
+  // Use the pre-built hvetsa image. Change the tag to pin a specific version.
+  "image": "hvetsa:latest",
+
+  // ── Workspace ────────────────────────────────────────────────────────────
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+
+  // ── Container options ────────────────────────────────────────────────────
+  "runArgs": [
+    // Docker-in-Docker: talk to the host Docker daemon
+    "--volume=/var/run/docker.sock:/var/run/docker.sock",
+    "--volume=/Users/hvetsa:/Users/hvetsa"
+  ],
+
+  // ── Environment variables ────────────────────────────────────────────────
+  // Pass secrets from the host shell — never hard-code keys here.
+  // Set them in your host environment or in VS Code's secrets store:
+  //   export ANTHROPIC_API_KEY=sk-ant-...
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "AWS_ACCESS_KEY_ID": "${localEnv:AWS_ACCESS_KEY_ID}",
+    "AWS_SECRET_ACCESS_KEY": "${localEnv:AWS_SECRET_ACCESS_KEY}",
+    "AWS_DEFAULT_REGION": "${localEnv:AWS_DEFAULT_REGION}"
+  },
+
+  // ── Port forwarding ──────────────────────────────────────────────────────
+  "forwardPorts": [
+    8888,   // JupyterLab / Notebook
+    8000,   // FastAPI / uvicorn dev server
+    3000,   // Node dev server
+    5000    // General purpose
+  ],
+  "portsAttributes": {
+    "8888": { "label": "JupyterLab",  "onAutoForward": "openBrowser" },
+    "8000": { "label": "FastAPI",     "onAutoForward": "notify" },
+    "3000": { "label": "Node server", "onAutoForward": "notify" },
+    "5000": { "label": "App",         "onAutoForward": "silent" }
+  },
+
+  // ── Lifecycle hooks ──────────────────────────────────────────────────────
+  // Runs once after the container is created (not on every start).
+  "postCreateCommand": "pip install --quiet --no-cache-dir -r /workspace/requirements.txt 2>/dev/null || true",
+
+  // ── VS Code customisations ───────────────────────────────────────────────
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // Python
+        "python.defaultInterpreterPath": "/usr/bin/python3.13",
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        // Linting
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.linting.flake8Enabled": true,
+        "mypy-type-checker.enabled": true,
+        // Terminal
+        "terminal.integrated.defaultProfile.linux": "bash",
+        // Docker
+        "docker.host": "unix:///var/run/docker.sock",
+        // Editor
+        "editor.formatOnSave": true,
+        "editor.rulers": [88],
+        "files.trimTrailingWhitespace": true
+      },
+      "extensions": [
+        // Python
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.flake8",
+        "ms-python.mypy-type-checker",
+        // Jupyter
+        "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-renderers",
+        // Docker
+        "ms-azuretools.vscode-docker",
+        // Node / JS / TS
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        // Git
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        // General dev
+        "streetsidesoftware.code-spell-checker",
+        "usernamehw.errorlens",
+        "christian-kohler.path-intellisense",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  },
+
+  // ── Features (optional Docker-in-Docker alternative) ─────────────────────
+  // Uncomment if you prefer the managed DinD feature instead of socket mount:
+  // "features": {
+  //   "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  // }
+
+  // ── Remote user ──────────────────────────────────────────────────────────
+  "remoteUser": "root"
+}
