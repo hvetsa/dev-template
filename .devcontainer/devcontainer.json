@@ -13,7 +13,8 @@
   "runArgs": [
     // Docker-in-Docker: talk to the host Docker daemon
     "--volume=/var/run/docker.sock:/var/run/docker.sock",
-    "--volume=/Users/hvetsa:/Users/hvetsa"
+    "--volume=/Users/hvetsa:/Users/hvetsa",
+    "--env-file", "/Users/hvetsa/Documents/DockerSubSystem/secure_zone/secrets.env.vscode"
   ],
 
   // ── Environment variables ────────────────────────────────────────────────
